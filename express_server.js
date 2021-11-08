@@ -24,6 +24,12 @@ app.get("/urls", (req, res) => {
   res.render("urls_index" , templateVars);
 });
 
+app.post("/urls", (req, res) => {
+  console.log(req.body);
+
+  res.send("OK.");
+});
+
 app.get("/urls/new", (req, res) => {
   res.render("urls_new");
 });
