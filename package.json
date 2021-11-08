@@ -16,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/navara99/tinyApp/issues"
   },
-  "homepage": "https://github.com/navara99/tinyApp#readme"
+  "homepage": "https://github.com/navara99/tinyApp#readme",
+  "dependencies": {
+    "express": "^4.17.1"
+  }
 }
