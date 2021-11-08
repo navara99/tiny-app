@@ -5,7 +5,31 @@ const PORT = 8080; // default port 8080
 
 app.set("view engine", "ejs");
 
-app.use(bodyParser.urlencoded({extended: true}));
+app.use(bodyParser.urlencoded({ extended: true }));
+
+const generateRandomChar = () => {
+  const randomNumber = Math.floor(Math.random() * (57 - 48 + 1)) + 48;
+  const randomCapitalLetter = Math.floor(Math.random() * (90 - 65 + 1)) + 65;
+  const randomLowercaseLetter = Math.floor(Math.random() * (122 - 97 + 1)) + 97;
+  const charType = Math.floor(Math.random() * 3) + 1;
+
+  let charCode;
+  if (charType === 1) charCode = randomNumber;
+  if (charType === 2) charCode = randomCapitalLetter;
+  if (charType === 3) charCode = randomLowercaseLetter;
+
+  return String.fromCharCode(charCode);
+}
+
+const generateRandomString = (length) => {
+  let str = "";
+
+  while (str.length < length) {
+    str += generateRandomChar();
+  }
+
+  return str;
+}
 
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
@@ -21,12 +45,12 @@ app.get("/urls", (req, res) => {
     urls: urlDatabase
   };
 
-  res.render("urls_index" , templateVars);
+  res.render("urls_index", templateVars);
 });
 
 app.post("/urls", (req, res) => {
   console.log(req.body);
-
+  console.log(generateRandomString(6));
   res.send("OK.");
 });
 
@@ -41,7 +65,7 @@ app.get("/urls/:shortURL", (req, res) => {
     longURL: urlDatabase[shortURL]
   };
 
-  res.render("urls_show" , templateVars);
+  res.render("urls_show", templateVars);
 });
 
 app.get("/hello", (req, res) => {
