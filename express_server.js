@@ -40,6 +40,13 @@ app.get("/", (req, res) => {
   res.send("Hello!");
 });
 
+app.post("/urls/:id", (req, res) => {
+  const { id } = req.params;
+  const { longURL } = req.body;
+  urlDatabase[id] = longURL;
+  res.redirect("/urls");
+})
+
 app.post("/urls/:shortURL/delete", (req, res) => {
   const { shortURL } = req.params;
   delete urlDatabase[shortURL];
