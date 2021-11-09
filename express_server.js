@@ -57,13 +57,24 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 
 app.post("/login", (req, res) => {
   const { username } = req.body;
-  console.log(username);
   res.cookie("username", username);
   res.redirect("/urls");
 });
 
 app.get("/login", (req, res) => {
-  res.render("login_page");
+  const templateVars = {
+    urls: urlDatabase,
+    email: undefined
+  };
+  res.render("login_page" , templateVars);
+});
+
+app.get("/register", (req, res) => {
+  const templateVars = {
+    urls: urlDatabase,
+    email: undefined
+  };
+  res.render("register_page" , templateVars);
 });
 
 app.post("/logout", (req, res) => {
@@ -74,7 +85,7 @@ app.post("/logout", (req, res) => {
 app.get("/urls", (req, res) => {
   const templateVars = {
     urls: urlDatabase,
-    username: req.cookies["username"]
+    email: undefined
   };
 
   res.render("urls_index", templateVars);
@@ -85,7 +96,7 @@ app.post("/urls", (req, res) => {
   const shortURL = generateRandomString(6);
   urlDatabase[shortURL] = longURL;
 
-  res.redirect(`/u/${shortURL}`)
+  res.redirect(`/urls`)
 });
 
 app.get("/u/:shortURL", (req, res) => {
@@ -96,7 +107,11 @@ app.get("/u/:shortURL", (req, res) => {
 });
 
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+  const templateVars = {
+    urls: urlDatabase,
+    email: undefined
+  };
+  res.render("urls_new", templateVars);
 });
 
 app.get("/urls/:shortURL", (req, res) => {
@@ -104,7 +119,7 @@ app.get("/urls/:shortURL", (req, res) => {
   const templateVars = {
     shortURL,
     longURL: urlDatabase[shortURL],
-    username: req.cookies["username"]
+    email: undefined
   };
 
   res.render("urls_show", templateVars);
