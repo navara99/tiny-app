@@ -56,10 +56,14 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 });
 
 app.post("/login", (req, res) => {
-  const {username} = req.body;
+  const { username } = req.body;
   console.log(username);
-  res.cookie("username" , username);
+  res.cookie("username", username);
   res.redirect("/urls");
+});
+
+app.get("/login", (req, res) => {
+  res.render("login_page");
 });
 
 app.post("/logout", (req, res) => {
