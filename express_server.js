@@ -8,6 +8,29 @@ app.set("view engine", "ejs");
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: true }));
 
+const urlDatabase = {
+  "b2xVn2": "http://www.lighthouselabs.ca",
+  "9sm5xK": "http://www.google.com"
+};
+
+const users = {
+  "testuser123": {
+    id: "testuser12",
+    email: "user@example.com",
+    password: "88888888"
+  },
+  "testuserabc": {
+    id: "testuserAb",
+    email: "user2@example.com",
+    password: "22222222"
+  },
+  "E02a9OV5xz": {
+    id: "E02a9OV5xz",
+    email: "test@test.com",
+    password: "abcdefgh"
+  }
+}
+
 const generateRandomChar = () => {
   const randomNumber = Math.floor(Math.random() * (57 - 48 + 1)) + 48;
   const randomCapitalLetter = Math.floor(Math.random() * (90 - 65 + 1)) + 65;
@@ -31,11 +54,6 @@ const generateRandomString = (length) => {
 
   return str;
 }
-
-let urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
-};
 
 app.get("/", (req, res) => {
   res.send("Hello!");
@@ -64,31 +82,46 @@ app.post("/login", (req, res) => {
 app.get("/login", (req, res) => {
   const templateVars = {
     urls: urlDatabase,
-    email: undefined
+    user:undefined
   };
-  res.render("login_page" , templateVars);
+  res.render("login_page", templateVars);
 });
 
 app.get("/register", (req, res) => {
   const templateVars = {
     urls: urlDatabase,
-    email: undefined
+    user:undefined
   };
-  res.render("register_page" , templateVars);
+  res.render("register_page", templateVars);
+});
+
+app.post("/register", (req, res) => {
+  const { email, password } = req.body;
+  const userId = generateRandomString(10);
+  users[userId] = {
+    userId,
+    email,
+    password
+  };
+
+  res.cookie("user_id", userId);
+  res.redirect("/urls")
 });
 
 app.post("/logout", (req, res) => {
-  res.clearCookie("username");
+  res.clearCookie("user_id");
   res.redirect("/urls");
 });
 
 app.get("/urls", (req, res) => {
+  const { user_id } = req.cookies;
+  const user = users[user_id];
   const templateVars = {
     urls: urlDatabase,
-    email: undefined
-  };
+    user
+  }
 
-  res.render("urls_index", templateVars);
+  res.render("urls_index", templateVars );
 });
 
 app.post("/urls", (req, res) => {
@@ -107,19 +140,23 @@ app.get("/u/:shortURL", (req, res) => {
 });
 
 app.get("/urls/new", (req, res) => {
+  const { user_id } = req.cookies;
+  const user = users[user_id];
   const templateVars = {
     urls: urlDatabase,
-    email: undefined
-  };
+    user
+  }
   res.render("urls_new", templateVars);
 });
 
 app.get("/urls/:shortURL", (req, res) => {
   const { shortURL } = req.params;
+  const { user_id } = req.cookies;
+  const user = users[user_id];
   const templateVars = {
     shortURL,
     longURL: urlDatabase[shortURL],
-    email: undefined
+    user
   };
 
   res.render("urls_show", templateVars);
