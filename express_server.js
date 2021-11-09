@@ -86,6 +86,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 
 app.post("/login", (req, res) => {
   const {email , password} = req.body;
+  if (!email || !password) return res.status(400).send("Email or Password field is empty.");
   const user = getUserByEmail(email,users);
   if (!user) return res.status(403).send("Email not found. Please create a new account.");
   if (password !== user.password) return res.status(403).send("Password is incorrect.");
@@ -113,7 +114,7 @@ app.get("/register", (req, res) => {
 app.post("/register", (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) return res.status(400).send("Email or Password field is empty.");
-  if (!getUserByEmail(email, users)) return res.status(400).send("Email is already being used. Please login.");
+  if (getUserByEmail(email, users)) return res.status(400).send("Email is already being used. Please login.");
   const userId = generateRandomString(10);
   users[userId] = {
     userId,
