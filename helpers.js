@@ -23,6 +23,7 @@ const generateRandomString = (length) => {
 }
 
 const getUserByEmail = (email, users) => {
+  if (!email || !users) return;
   const vals = Object.values(users);
   let user;
 
