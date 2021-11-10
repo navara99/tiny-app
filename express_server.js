@@ -140,9 +140,10 @@ app.get("/urls/new", (req, res) => {
 app.get("/urls/:shortURL", (req, res) => {
   const { shortURL } = req.params;
   const { user_id } = req.session;
-  if (urlDatabase[shortURL].userID !== user_id || !user_id) {
-    return res.status(403).render("error_message", { message: "404: Unauthorized\n" })
-  }
+  
+  if (!user_id) return sendErrorMessage(res, 401 , "Please log in to access this resource.")
+  if (urlDatabase[shortURL].userID !== user_id) return sendErrorMessage(res, 403 , "You do not have access to this resource");
+
   const user = users[user_id];
   const templateVars = {
     shortURL,
