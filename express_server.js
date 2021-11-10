@@ -14,7 +14,7 @@ app.use(cookieSession({ secret }));
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.get("/", (req, res) => {
-  res.send("Hello!");
+  res.redirect("/urls");
 });
 
 app.post("/urls/:id", (req, res) => {
