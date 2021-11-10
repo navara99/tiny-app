@@ -20,8 +20,8 @@ app.get("/", (req, res) => {
 app.post("/urls/:id", (req, res) => {
   const { id } = req.params;
   const { user_id } = req.session;
-  if (!user_id) return sendErrorMessage(res,401, "You must login to make this request.");
-  if (urlDatabase[id].userID !== user_id) return sendErrorMessage(res, 403 , "You do not have permission to update this resource.")
+  if (!user_id) return sendErrorMessage(res, 401, "You must login to make this request.");
+  if (urlDatabase[id].userID !== user_id) return sendErrorMessage(res, 403, "You do not have permission to update this resource.")
 
   const { longURL } = req.body;
   urlDatabase[id] = { longURL, userID: user_id };
@@ -31,9 +31,8 @@ app.post("/urls/:id", (req, res) => {
 app.post("/urls/:shortURL/delete", (req, res) => {
   const { user_id } = req.session;
   const { shortURL } = req.params;
-  if (urlDatabase[shortURL].userID !== user_id) {
-    return res.status(401).render("error_message", { message: "401: Unauthorized\n" });
-  }
+  if (!user_id) return sendErrorMessage(res,401, "You must login to make this request.")
+  if (urlDatabase[shortURL].userID !== user_id) return sendErrorMessage(res, 403, "You do not have permission to delete this resource.");
 
   delete urlDatabase[shortURL];
   res.redirect("/urls");
@@ -120,7 +119,7 @@ app.post("/urls", (req, res) => {
 
 app.get("/u/:shortURL", (req, res) => {
   const { shortURL } = req.params;
-  if (!urlDatabase[shortURL]) return sendErrorMessage(res,404,"The requested resource was not found.");
+  if (!urlDatabase[shortURL]) return sendErrorMessage(res, 404, "The requested resource was not found.");
 
   const longURL = urlDatabase[shortURL].longURL
   res.redirect(longURL);
@@ -141,8 +140,8 @@ app.get("/urls/:shortURL", (req, res) => {
   const { shortURL } = req.params;
   const { user_id } = req.session;
 
-  if (!user_id) return sendErrorMessage(res, 401 , "Please log in to access this resource.")
-  if (urlDatabase[shortURL].userID !== user_id) return sendErrorMessage(res, 403 , "You do not have access to this resource");
+  if (!user_id) return sendErrorMessage(res, 401, "Please log in to access this resource.")
+  if (urlDatabase[shortURL].userID !== user_id) return sendErrorMessage(res, 403, "You do not have access to this resource");
 
   const user = users[user_id];
   const templateVars = {
