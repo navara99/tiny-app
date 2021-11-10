@@ -2,7 +2,9 @@ const express = require("express");
 const app = express();
 const bodyParser = require("body-parser");
 const cookieSession = require('cookie-session');
-const { generateRandomString, getUserByEmail, getURLsByUserId } = require("./helpers")
+const { generateRandomString, getUserByEmail, getURLsByUserId } = require("./helpers");
+const users = require("./data/usersData");
+const urlDatabase = require("./data/urlDatabase");
 const bcrypt = require("bcrypt");
 const PORT = 8080; // default port 8080
 
@@ -10,37 +12,7 @@ app.set("view engine", "ejs");
 app.use(cookieSession({
   secret: "abcdefghi"
 }));
-
 app.use(bodyParser.urlencoded({ extended: true }));
-
-const urlDatabase = {
-  "b2xVn2": {
-    longURL: "http://www.lighthouselabs.ca",
-    userID: "testuser123"
-  },
-  "9sm5xK": {
-    longURL: "http://www.google.com",
-    userID: "testuserabc"
-  }
-};
-
-const users = {
-  "testuser123": {
-    id: "testuser123",
-    email: "user@example.com",
-    password: "88888888"
-  },
-  "testuserabc": {
-    id: "testuserabc",
-    email: "user2@example.com",
-    password: "22222222"
-  },
-  "E02a9OV5xz": {
-    id: "E02a9OV5xz",
-    email: "test@test.com",
-    password: "abcdefgh"
-  }
-}
 
 app.get("/", (req, res) => {
   res.send("Hello!");
@@ -188,10 +160,6 @@ app.get("/urls/:shortURL", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
-app.get("/urls.json", (req, res) => {
-  res.json(urlDatabase);
-});
-
 app.listen(PORT, () => {
-  console.log(`Example app listening on port ${PORT}!`);
+  console.log(`TinyApp is listening on port ${PORT}.`);
 });
