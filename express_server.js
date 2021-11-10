@@ -3,15 +3,14 @@ const app = express();
 const bodyParser = require("body-parser");
 const cookieSession = require('cookie-session');
 const { generateRandomString, getUserByEmail, getURLsByUserId } = require("./helpers")
-const cookieParser = require('cookie-parser');
 const bcrypt = require("bcrypt");
 const PORT = 8080; // default port 8080
 
 app.set("view engine", "ejs");
-// app.use(cookieParser());
 app.use(cookieSession({
   secret: "abcdefghi"
 }));
+
 app.use(bodyParser.urlencoded({ extended: true }));
 
 const urlDatabase = {
@@ -84,7 +83,6 @@ app.post("/login", (req, res) => {
   };
 
   req.session.user_id = user.id;
-  // res.cookie("user_id", user.id);
   res.redirect("/urls");
 });
 
@@ -124,13 +122,11 @@ app.post("/register", (req, res) => {
   console.log(userId);
   console.log(users);
   req.session.user_id = userId;
-  // res.cookie("user_id", userId);
   res.redirect("/urls")
 });
 
 app.post("/logout", (req, res) => {
   req.session = null;
-  // res.clearCookie("user_id");
   res.redirect("/urls");
 });
 
