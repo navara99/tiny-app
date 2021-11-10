@@ -95,9 +95,20 @@ describe('generateRandomString', function () {
   it('should return a string with length 6 when the argument is 6', function () {
     const strLength = generateRandomString(6).length;
     const expectedStrLength = 6;
-    assert(strLength, expectedStrLength);
+    assert.equal(strLength, expectedStrLength);
   });
 
-  
+  it('should return an empty string when the argument is 0', function () {
+    const str = generateRandomString(0);
+    const expectedStr = "";
+    assert.equal(str, expectedStr);
+  });
+
+  it('should return an empty string when the argument is not a number', function () {
+    const str = generateRandomString("bob");
+    console.log(str);
+    const expectedStr = "";
+    assert.equal(str, expectedStr);
+  });
 
 });
