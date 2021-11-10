@@ -2,7 +2,7 @@ const express = require("express");
 const app = express();
 const bodyParser = require("body-parser");
 const cookieSession = require('cookie-session');
-const { generateRandomString, getUserByEmail, getURLsByUserId } = require("./helpers");
+const { generateRandomString, getUserByEmail, getURLsByUserId, sendErrorMessage } = require("./helpers");
 const users = require("./data/usersData");
 const urlDatabase = require("./data/urlDatabase");
 const bcrypt = require("bcrypt");
@@ -10,7 +10,7 @@ const PORT = 8080;
 const secret = generateRandomString(12);
 
 app.set("view engine", "ejs");
-app.use(cookieSession({secret}));
+app.use(cookieSession({ secret }));
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.get("/", (req, res) => {
@@ -75,12 +75,10 @@ app.get("/register", (req, res) => {
 
 app.post("/register", (req, res) => {
   const { email, password } = req.body;
-  if (!email || !password) {
-    return res.status(400).render("error_message", { message: "Email or Password field is empty." });
-  }
-  if (getUserByEmail(email, users)) {
-    return res.status(400).render("error_message", { message: "Email is already being used. Please login." });
-  }
+
+  if (!email || !password) return sendErrorMessage(res, 400, "Email or Password field is empty.");
+  if (getUserByEmail(email, users)) return sendErrorMessage(res, 409, "Email is already being used. Please login.");
+
   const userId = generateRandomString(10);
 
   const hashedPassword = bcrypt.hashSync(password, 12);
@@ -90,8 +88,7 @@ app.post("/register", (req, res) => {
     email,
     hashedPassword
   };
-  console.log(userId);
-  console.log(users);
+
   req.session.user_id = userId;
   res.redirect("/urls")
 });
@@ -116,7 +113,8 @@ app.get("/urls", (req, res) => {
 
 app.post("/urls", (req, res) => {
   const { user_id } = req.session;
-  if (!users[user_id]) return res.status(401).render("error_message", { message: "401: Unauthorized\n" });
+  if (!users[user_id]) return sendErrorMessage(res, 401, "You do not have access to this resource.");
+  
   const { longURL } = req.body;
   const shortURL = generateRandomString(6);
   urlDatabase[shortURL] = { longURL, userID: user_id };
