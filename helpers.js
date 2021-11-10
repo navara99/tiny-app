@@ -53,7 +53,8 @@ const statusMessages = {
   401: "Unauthorized",
   403: "Forbidden",
   404: "Not Found",
-  405: "Method Not Allowed"
+  405: "Method Not Allowed",
+  409: "Conflict"
 };
 
 const sendErrorMessage = (res, statusCode, message) => {
