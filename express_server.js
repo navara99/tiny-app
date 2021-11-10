@@ -143,6 +143,8 @@ app.get("/urls", (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
+  const { user_id } = req.cookies;
+  if (!user_id) return res.status(401).send("401: Unauthorized\n");
   const { longURL } = req.body;
   const shortURL = generateRandomString(6);
   urlDatabase[shortURL] = longURL;
@@ -159,6 +161,7 @@ app.get("/u/:shortURL", (req, res) => {
 
 app.get("/urls/new", (req, res) => {
   const { user_id } = req.cookies;
+  if (!user_id) return res.redirect("/login");
   const user = users[user_id];
   const templateVars = {
     urls: urlDatabase,
