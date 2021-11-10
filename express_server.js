@@ -41,17 +41,13 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 
 app.post("/login", (req, res) => {
   const { email, password } = req.body;
-  if (!email || !password) {
-    return res.status(400).render("error_message", { message: "Email or Password field is empty." });
-  };
+  if (!email || !password) return sendErrorMessage(res, 400, "Email or Password field is empty.");
   const user = getUserByEmail(email, users);
-  if (!user) {
-    return res.status(403).render("error_message", { message: "Email not found. Please create a new account." });
-  };
+  if (!user) return sendErrorMessage(res,403, "Email not found. Please create a new account.");
+
   const correctPassword = bcrypt.compareSync(password, user.hashedPassword);
-  if (!correctPassword) {
-    return res.status(403).render("error_message", { message: "Password is incorrect." });
-  };
+
+  if (!correctPassword) sendErrorMessage(res,403,"Email/Password is incorrect.");
 
   req.session.user_id = user.id;
   res.redirect("/urls");
@@ -114,7 +110,7 @@ app.get("/urls", (req, res) => {
 app.post("/urls", (req, res) => {
   const { user_id } = req.session;
   if (!users[user_id]) return sendErrorMessage(res, 401, "You do not have access to this resource.");
-  
+
   const { longURL } = req.body;
   const shortURL = generateRandomString(6);
   urlDatabase[shortURL] = { longURL, userID: user_id };
