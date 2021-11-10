@@ -1,12 +1,16 @@
 const express = require("express");
 const app = express();
 const bodyParser = require("body-parser");
+const cookieSession = require('cookie-session')
 const cookieParser = require('cookie-parser');
 const bcrypt = require("bcrypt");
 const PORT = 8080; // default port 8080
 
 app.set("view engine", "ejs");
-app.use(cookieParser());
+// app.use(cookieParser());
+app.use(cookieSession({
+  secret: "abcdefghi"
+}));
 app.use(bodyParser.urlencoded({ extended: true }));
 
 const urlDatabase = {
@@ -91,7 +95,7 @@ app.get("/", (req, res) => {
 
 app.post("/urls/:id", (req, res) => {
   const { id } = req.params;
-  const { user_id } = req.cookies;
+  const { user_id } = req.session;
   if (urlDatabase[id].userID !== user_id) {
     return res.status(401).render("error_message", { message: "401: Unauthorized\n" });
   }
@@ -101,7 +105,7 @@ app.post("/urls/:id", (req, res) => {
 })
 
 app.post("/urls/:shortURL/delete", (req, res) => {
-  const { user_id } = req.cookies;
+  const { user_id } = req.session;
   const { shortURL } = req.params;
   if (urlDatabase[shortURL].userID !== user_id) {
     return res.status(401).render("error_message", { message: "401: Unauthorized\n" });
@@ -125,7 +129,8 @@ app.post("/login", (req, res) => {
     return res.status(403).render("error_message", { message: "Password is incorrect." });
   };
 
-  res.cookie("user_id", user.id);
+  req.session.user_id = user.id;
+  // res.cookie("user_id", user.id);
   res.redirect("/urls");
 });
 
@@ -162,19 +167,21 @@ app.post("/register", (req, res) => {
     email,
     hashedPassword
   };
-
+  console.log(userId);
   console.log(users);
-  res.cookie("user_id", userId);
+  req.session.user_id = userId;
+  // res.cookie("user_id", userId);
   res.redirect("/urls")
 });
 
 app.post("/logout", (req, res) => {
-  res.clearCookie("user_id");
+  req.session = null;
+  // res.clearCookie("user_id");
   res.redirect("/urls");
 });
 
 app.get("/urls", (req, res) => {
-  const { user_id } = req.cookies;
+  const { user_id } = req.session;
   const user = users[user_id];
   if (!user) return res.render("login_message", { message: "Please login or create a new account to use TinyApp.", user })
   const userURLs = getURLsByUserId(user_id, urlDatabase);
@@ -187,7 +194,7 @@ app.get("/urls", (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
-  const { user_id } = req.cookies;
+  const { user_id } = req.session;
   if (!users[user_id]) return res.status(401).render("error_message", { message: "401: Unauthorized\n" });
   const { longURL } = req.body;
   const shortURL = generateRandomString(6);
@@ -205,7 +212,7 @@ app.get("/u/:shortURL", (req, res) => {
 });
 
 app.get("/urls/new", (req, res) => {
-  const { user_id } = req.cookies;
+  const { user_id } = req.session;
   const user = users[user_id];
   if (!user) return res.redirect("/login");
   const templateVars = {
@@ -217,7 +224,7 @@ app.get("/urls/new", (req, res) => {
 
 app.get("/urls/:shortURL", (req, res) => {
   const { shortURL } = req.params;
-  const { user_id } = req.cookies;
+  const { user_id } = req.session;
   if (urlDatabase[shortURL].userID !== user_id || !user_id) {
     return res.status(403).render("error_message", { message: "404: Unauthorized\n" })
   }
