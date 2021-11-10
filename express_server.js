@@ -174,7 +174,7 @@ app.post("/urls", (req, res) => {
 
 app.get("/u/:shortURL", (req, res) => {
   const { shortURL } = req.params;
-  const longURL = urlDatabase[shortURL]
+  const longURL = urlDatabase[shortURL].longURL
 
   res.redirect(longURL);
 });
@@ -193,10 +193,11 @@ app.get("/urls/new", (req, res) => {
 app.get("/urls/:shortURL", (req, res) => {
   const { shortURL } = req.params;
   const { user_id } = req.cookies;
+  if (urlDatabase[shortURL].userID !== user_id || !user_id) return res.status(401).send("401: Unauthorized\n")
   const user = users[user_id];
   const templateVars = {
     shortURL,
-    longURL: urlDatabase[shortURL],
+    longURL: urlDatabase[shortURL].longURL,
     user
   };
 
