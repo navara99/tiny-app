@@ -43,11 +43,11 @@ app.post("/login", (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) return sendErrorMessage(res, 400, "Email or Password field is empty.");
   const user = getUserByEmail(email, users);
-  if (!user) return sendErrorMessage(res,403, "Email not found. Please create a new account.");
+  if (!user) return sendErrorMessage(res, 403, "Email not found. Please create a new account.");
 
   const correctPassword = bcrypt.compareSync(password, user.hashedPassword);
 
-  if (!correctPassword) sendErrorMessage(res,403,"Email/Password is incorrect.");
+  if (!correctPassword) sendErrorMessage(res, 403, "Email/Password is incorrect.");
 
   req.session.user_id = user.id;
   res.redirect("/urls");
@@ -120,9 +120,9 @@ app.post("/urls", (req, res) => {
 
 app.get("/u/:shortURL", (req, res) => {
   const { shortURL } = req.params;
-  if (!urlDatabase[shortURL]) return res.status(401).render("error_message", { message: "404: The requested resource was not found." });
-  const longURL = urlDatabase[shortURL].longURL
+  if (!urlDatabase[shortURL]) return sendErrorMessage(res,404,"The requested resource was not found.");
 
+  const longURL = urlDatabase[shortURL].longURL
   res.redirect(longURL);
 });
 
