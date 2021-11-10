@@ -1,5 +1,5 @@
 const { assert } = require('chai');
-const { getUserByEmail, getURLsByUserId } = require('../helpers.js');
+const { getUserByEmail, getURLsByUserId, generateRandomString } = require('../helpers.js');
 
 const testUsers = {
   "userRandomID": {
@@ -87,5 +87,17 @@ describe('getURLsByUserId', function () {
     const URLs = getURLsByUserId("userRandomID", null);
     assert.deepEqual(URLs, {});
   });
+
+});
+
+describe('generateRandomString', function () {
+
+  it('should return a string with length 6 when the argument is 6', function () {
+    const strLength = generateRandomString(6).length;
+    const expectedStrLength = 6;
+    assert(strLength, expectedStrLength);
+  });
+
+  
 
 });
