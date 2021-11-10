@@ -14,6 +14,7 @@ const generateRandomChar = () => {
 
 const generateRandomString = (length) => {
   let str = "";
+  if (typeof length !== "number") return str;
 
   while (str.length < length) {
     str += generateRandomChar();
