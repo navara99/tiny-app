@@ -96,9 +96,11 @@ app.post("/urls/:id", (req, res) => {
 })
 
 app.post("/urls/:shortURL/delete", (req, res) => {
+  const { user_id } = req.cookies;
+  if (!users[user_id]) return res.status(403).send("401: Unauthorized\n");
   const { shortURL } = req.params;
-  delete urlDatabase[shortURL];
 
+  delete urlDatabase[shortURL];
   res.redirect("/urls");
 });
 
@@ -164,10 +166,10 @@ app.get("/urls", (req, res) => {
 
 app.post("/urls", (req, res) => {
   const { user_id } = req.cookies;
-  if (!user_id) return res.status(401).send("401: Unauthorized\n");
+  if (!users[user_]) return res.status(401).send("401: Unauthorized\n");
   const { longURL } = req.body;
   const shortURL = generateRandomString(6);
-  urlDatabase[shortURL] = longURL;
+  urlDatabase[shortURL] = { longURL, userID: user_id };
 
   res.redirect(`/urls`)
 });
@@ -181,8 +183,8 @@ app.get("/u/:shortURL", (req, res) => {
 
 app.get("/urls/new", (req, res) => {
   const { user_id } = req.cookies;
-  if (!user_id) return res.redirect("/login");
   const user = users[user_id];
+  if (!user) return res.redirect("/login");
   const templateVars = {
     urls: urlDatabase,
     user
