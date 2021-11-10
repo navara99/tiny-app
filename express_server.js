@@ -190,8 +190,9 @@ app.post("/urls", (req, res) => {
 
 app.get("/u/:shortURL", (req, res) => {
   const { shortURL } = req.params;
+  if (!urlDatabase[shortURL]) return res.status(401).render("error_message", { message: "404: The requested resource was not found." });
   const longURL = urlDatabase[shortURL].longURL
-
+  
   res.redirect(longURL);
 });
 
@@ -210,7 +211,7 @@ app.get("/urls/:shortURL", (req, res) => {
   const { shortURL } = req.params;
   const { user_id } = req.cookies;
   if (urlDatabase[shortURL].userID !== user_id || !user_id) {
-    return res.status(401).render("error_message", { message: "401: Unauthorized\n" })
+    return res.status(403).render("error_message", { message: "404: Unauthorized\n"})
   }
   const user = users[user_id];
   const templateVars = {
