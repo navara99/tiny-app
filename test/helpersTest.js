@@ -64,9 +64,28 @@ describe('getURLsByUserId', function () {
       b2xVn2: { longURL: 'https://ca.nba.com/?gr=www', userID: 'userRandomID' },
       sag34X: { longURL: 'https://github.com/', userID: 'userRandomID' }
     }
-    
-    assert.deepEqual(URLs, expectedURLs);
-});
 
+    assert.deepEqual(URLs, expectedURLs);
+  });
+
+  it('should return an empty object if there are no URLs associated with the user id', function () {
+    const URLs = getURLsByUserId("user123", urlDatabase);
+    assert.deepEqual(URLs, {});
+  });
+
+  it('should return an empty object if the url database argument is an empty object', function () {
+    const URLs = getURLsByUserId("userRandomID", {});
+    assert.deepEqual(URLs, {});
+  });
+
+  it('should return an empty object if first parameter is falsy', function () {
+    const URLs = getURLsByUserId(null, urlDatabase);
+    assert.deepEqual(URLs, {});
+  });
+
+  it('should return an empty object if second parameter is falsy', function () {
+    const URLs = getURLsByUserId("userRandomID", null);
+    assert.deepEqual(URLs, {});
+  });
 
 });
