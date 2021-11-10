@@ -47,4 +47,18 @@ const getURLsByUserId = (id, urlDatabase) => {
   return usersURLs;
 }
 
-module.exports = { generateRandomString, getUserByEmail, getURLsByUserId }
+// Status code messages from https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
+const statusMessages = {
+  400: "Bad Request",
+  401: "Unauthorized",
+  403: "Forbidden",
+  404: "Not Found",
+  405: "Method Not Allowed"
+};
+
+const sendErrorMessage = (res, statusCode, message) => {
+  const status = statusMessages[statusCode];
+  res.status(statusCode).render("error_message", { message, status , statusCode });
+}
+
+module.exports = { generateRandomString, getUserByEmail, getURLsByUserId, sendErrorMessage }
