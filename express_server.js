@@ -1,7 +1,8 @@
 const express = require("express");
 const app = express();
 const bodyParser = require("body-parser");
-const cookieParser = require('cookie-parser')
+const cookieParser = require('cookie-parser');
+const bcrypt = require("bcrypt");
 const PORT = 8080; // default port 8080
 
 app.set("view engine", "ejs");
@@ -150,11 +151,15 @@ app.post("/register", (req, res) => {
     return res.status(400).render("error_message", { message: "Email is already being used. Please login." });
   }
   const userId = generateRandomString(10);
+
+  const hashedPassword = bcrypt.hashSync(password,12);
+
   users[userId] = {
     userId,
     email,
-    password
+    hashedPassword
   };
+  
   console.log(users);
   res.cookie("user_id", userId);
   res.redirect("/urls")
