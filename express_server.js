@@ -152,6 +152,7 @@ app.post("/logout", (req, res) => {
 app.get("/urls", (req, res) => {
   const { user_id } = req.cookies;
   const user = users[user_id];
+  if (!user) return res.render("login_message", { user })
   const userURLs = getURLsByUserId(user_id, urlDatabase);
   const templateVars = {
     urls: userURLs,
