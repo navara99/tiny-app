@@ -20,9 +20,9 @@ app.get("/", (req, res) => {
 app.post("/urls/:id", (req, res) => {
   const { id } = req.params;
   const { user_id } = req.session;
-  if (urlDatabase[id].userID !== user_id) {
-    return res.status(401).render("error_message", { message: "401: Unauthorized\n" });
-  }
+  if (!user_id) return sendErrorMessage(res,401, "You must login to make this request.");
+  if (urlDatabase[id].userID !== user_id) return sendErrorMessage(res, 403 , "You do not have permission to update this resource.")
+
   const { longURL } = req.body;
   urlDatabase[id] = { longURL, userID: user_id };
   res.redirect("/urls");
@@ -140,7 +140,7 @@ app.get("/urls/new", (req, res) => {
 app.get("/urls/:shortURL", (req, res) => {
   const { shortURL } = req.params;
   const { user_id } = req.session;
-  
+
   if (!user_id) return sendErrorMessage(res, 401 , "Please log in to access this resource.")
   if (urlDatabase[shortURL].userID !== user_id) return sendErrorMessage(res, 403 , "You do not have access to this resource");
 
