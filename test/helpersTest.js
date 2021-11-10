@@ -30,4 +30,15 @@ describe('getUserByEmail', function () {
     const user = getUserByEmail("user100@example.com", testUsers);
     assert.isUndefined(user);
   });
+
+  it('should return undefined if first parameter is falsy', function () {
+    const user = getUserByEmail("" , testUsers);
+    assert.isUndefined(user);
+  });
+
+  it('should return undefined if second parameter is falsy', function () {
+    const user = getUserByEmail("" , testUsers);
+    assert.isUndefined(user);
+  });
+
 });
