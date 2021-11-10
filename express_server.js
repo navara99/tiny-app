@@ -69,7 +69,7 @@ const getUserByEmail = (email, users) => {
   vals.forEach((value) => {
     if (value.email === email) user = users[value.id];
   });
-  console.log(user);
+
   return user;
 }
 
@@ -113,14 +113,17 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 
 app.post("/login", (req, res) => {
   const { email, password } = req.body;
-  if (!email || !password) return res.status(400).render("error_message", { message: "Email or Password field is empty." });
+  if (!email || !password) {
+    return res.status(400).render("error_message", { message: "Email or Password field is empty." });
+  };
   const user = getUserByEmail(email, users);
   if (!user) {
     return res.status(403).render("error_message", { message: "Email not found. Please create a new account." });
-  }
-  if (password !== user.password) {
+  };
+  const correctPassword = bcrypt.compareSync(password, user.hashedPassword);
+  if (!correctPassword) {
     return res.status(403).render("error_message", { message: "Password is incorrect." });
-  }
+  };
 
   res.cookie("user_id", user.id);
   res.redirect("/urls");
@@ -152,14 +155,14 @@ app.post("/register", (req, res) => {
   }
   const userId = generateRandomString(10);
 
-  const hashedPassword = bcrypt.hashSync(password,12);
+  const hashedPassword = bcrypt.hashSync(password, 12);
 
   users[userId] = {
-    userId,
+    id: userId,
     email,
     hashedPassword
   };
-  
+
   console.log(users);
   res.cookie("user_id", userId);
   res.redirect("/urls")
@@ -197,7 +200,7 @@ app.get("/u/:shortURL", (req, res) => {
   const { shortURL } = req.params;
   if (!urlDatabase[shortURL]) return res.status(401).render("error_message", { message: "404: The requested resource was not found." });
   const longURL = urlDatabase[shortURL].longURL
-  
+
   res.redirect(longURL);
 });
 
@@ -216,7 +219,7 @@ app.get("/urls/:shortURL", (req, res) => {
   const { shortURL } = req.params;
   const { user_id } = req.cookies;
   if (urlDatabase[shortURL].userID !== user_id || !user_id) {
-    return res.status(403).render("error_message", { message: "404: Unauthorized\n"})
+    return res.status(403).render("error_message", { message: "404: Unauthorized\n" })
   }
   const user = users[user_id];
   const templateVars = {
