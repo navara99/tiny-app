@@ -6,12 +6,11 @@ const { generateRandomString, getUserByEmail, getURLsByUserId } = require("./hel
 const users = require("./data/usersData");
 const urlDatabase = require("./data/urlDatabase");
 const bcrypt = require("bcrypt");
-const PORT = 8080; // default port 8080
+const PORT = 8080;
+const secret = generateRandomString(12);
 
 app.set("view engine", "ejs");
-app.use(cookieSession({
-  secret: "abcdefghi"
-}));
+app.use(cookieSession({secret}));
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.get("/", (req, res) => {
