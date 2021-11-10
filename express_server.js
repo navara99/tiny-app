@@ -90,15 +90,21 @@ app.get("/", (req, res) => {
 
 app.post("/urls/:id", (req, res) => {
   const { id } = req.params;
+  const { user_id } = req.cookies;
+  if (urlDatabase[id].userID !== user_id) {
+    return res.status(401).render("error_message", { message: "401: Unauthorized\n" });
+  }
   const { longURL } = req.body;
-  urlDatabase[id] = longURL;
+  urlDatabase[id] = { longURL, userID: user_id };
   res.redirect("/urls");
 })
 
 app.post("/urls/:shortURL/delete", (req, res) => {
   const { user_id } = req.cookies;
-  if (!users[user_id]) return res.status(403).send("401: Unauthorized\n");
   const { shortURL } = req.params;
+  if (urlDatabase[shortURL].userID !== user_id) {
+    return res.status(401).render("error_message", { message: "401: Unauthorized\n" });
+  }
 
   delete urlDatabase[shortURL];
   res.redirect("/urls");
@@ -106,10 +112,14 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 
 app.post("/login", (req, res) => {
   const { email, password } = req.body;
-  if (!email || !password) return res.status(400).send("Email or Password field is empty.");
+  if (!email || !password) return res.status(400).render("error_message", { message: "Email or Password field is empty." });
   const user = getUserByEmail(email, users);
-  if (!user) return res.status(403).send("Email not found. Please create a new account.");
-  if (password !== user.password) return res.status(403).send("Password is incorrect.");
+  if (!user) {
+    return res.status(403).render("error_message", { message: "Email not found. Please create a new account." });
+  }
+  if (password !== user.password) {
+    return res.status(403).render("error_message", { message: "Password is incorrect." });
+  }
 
   res.cookie("user_id", user.id);
   res.redirect("/urls");
@@ -133,8 +143,12 @@ app.get("/register", (req, res) => {
 
 app.post("/register", (req, res) => {
   const { email, password } = req.body;
-  if (!email || !password) return res.status(400).send("Email or Password field is empty.");
-  if (getUserByEmail(email, users)) return res.status(400).send("Email is already being used. Please login.");
+  if (!email || !password) {
+    return res.status(400).render("error_message", { message: "Email or Password field is empty." });
+  }
+  if (getUserByEmail(email, users)) {
+    return res.status(400).render("error_message", { message: "Email is already being used. Please login." });
+  }
   const userId = generateRandomString(10);
   users[userId] = {
     userId,
@@ -154,7 +168,7 @@ app.post("/logout", (req, res) => {
 app.get("/urls", (req, res) => {
   const { user_id } = req.cookies;
   const user = users[user_id];
-  if (!user) return res.render("login_message", { user })
+  if (!user) return res.render("login_message", { message: "Please login or create a new account to use TinyApp.", user })
   const userURLs = getURLsByUserId(user_id, urlDatabase);
   const templateVars = {
     urls: userURLs,
@@ -166,7 +180,7 @@ app.get("/urls", (req, res) => {
 
 app.post("/urls", (req, res) => {
   const { user_id } = req.cookies;
-  if (!users[user_]) return res.status(401).send("401: Unauthorized\n");
+  if (!users[user_id]) return res.status(401).render("error_message", { message: "401: Unauthorized\n" });
   const { longURL } = req.body;
   const shortURL = generateRandomString(6);
   urlDatabase[shortURL] = { longURL, userID: user_id };
@@ -195,7 +209,9 @@ app.get("/urls/new", (req, res) => {
 app.get("/urls/:shortURL", (req, res) => {
   const { shortURL } = req.params;
   const { user_id } = req.cookies;
-  if (urlDatabase[shortURL].userID !== user_id || !user_id) return res.status(401).send("401: Unauthorized\n")
+  if (urlDatabase[shortURL].userID !== user_id || !user_id) {
+    return res.status(401).render("error_message", { message: "401: Unauthorized\n" })
+  }
   const user = users[user_id];
   const templateVars = {
     shortURL,
