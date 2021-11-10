@@ -9,8 +9,14 @@ app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  "b2xVn2": {
+    longURL: "http://www.lighthouselabs.ca",
+    userID: "testuser123"
+  },
+  "9sm5xK": {
+    longURL: "http://www.google.com",
+    userID: "testuserabc"
+  }
 };
 
 const users = {
@@ -20,7 +26,7 @@ const users = {
     password: "88888888"
   },
   "testuserabc": {
-    id: "testuserAb",
+    id: "testuserabc",
     email: "user2@example.com",
     password: "22222222"
   },
@@ -66,6 +72,18 @@ const getUserByEmail = (email, users) => {
   return user;
 }
 
+const getURLsByUserId = (id, urlDatabase) => {
+  const usersURLs = {}
+
+  for (const shortURL in urlDatabase) {
+    if (urlDatabase[shortURL].userID === id) {
+      usersURLs[shortURL] = { ...urlDatabase[shortURL] }
+    }
+  };
+
+  return usersURLs;
+}
+
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
@@ -85,12 +103,12 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 });
 
 app.post("/login", (req, res) => {
-  const {email , password} = req.body;
+  const { email, password } = req.body;
   if (!email || !password) return res.status(400).send("Email or Password field is empty.");
-  const user = getUserByEmail(email,users);
+  const user = getUserByEmail(email, users);
   if (!user) return res.status(403).send("Email not found. Please create a new account.");
   if (password !== user.password) return res.status(403).send("Password is incorrect.");
-  
+
   res.cookie("user_id", user.id);
   res.redirect("/urls");
 });
@@ -134,8 +152,9 @@ app.post("/logout", (req, res) => {
 app.get("/urls", (req, res) => {
   const { user_id } = req.cookies;
   const user = users[user_id];
+  const userURLs = getURLsByUserId(user_id, urlDatabase);
   const templateVars = {
-    urls: urlDatabase,
+    urls: userURLs,
     user
   }
 
