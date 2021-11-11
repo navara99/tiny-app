@@ -9,8 +9,15 @@ const bcrypt = require("bcrypt");
 const PORT = 8080;
 const secret = generateRandomString(12);
 
+/*********************************************** General App Setup ***********************************************/
+
+// Setting ejs as view engine
 app.set("view engine", "ejs");
+
+// Setting up cookie-session middlewear
 app.use(cookieSession({ secret }));
+
+// Setting up bodyParser middlewear
 app.use(bodyParser.urlencoded({ extended: true }));
 
 //  Messages used in handling errors
@@ -18,7 +25,6 @@ app.use(bodyParser.urlencoded({ extended: true }));
 const mustLogin = "You must login to make this request.";
 const noPermissionUpdate = "You do not have permission to update this resource.";
 const noPermissionDelete = "You do not have permission to delete this resource.";
-const noPermissionCreate = "You do not have permission to create a resource."
 const noAccess = "You do not have access to this resource."
 const incorrectEmailOrPass = "Email/Password is incorrect.";
 const emptyEmailPassword = "Email or Password field is empty.";
@@ -27,30 +33,55 @@ const emailAlreadyUsed = "Email is already being used. Please login.";
 const notFound = "The requested resource was not found.";
 const notLoggedIn = "Please login or create a new account to use TinyApp."
 
-app.get("/", (req, res) => {
-  res.redirect("/urls");
+/****************************************** Authentication related routes ******************************************/
+
+// Render register form
+
+app.get("/register", (req, res) => {
+  const templateVars = {
+    urls: urlDatabase,
+    user: undefined
+  };
+  res.render("register_page", templateVars);
 });
 
-app.post("/urls/:id", (req, res) => {
-  const { id } = req.params;
-  const { user_id } = req.session;
-  if (!user_id) return sendErrorMessage(res, 401, mustLogin);
-  if (urlDatabase[id].userID !== user_id) return sendErrorMessage(res, 403, noPermissionUpdate)
+// Persist new user to database object
 
-  const { longURL } = req.body;
-  urlDatabase[id] = { longURL, userID: user_id };
-  res.redirect("/urls");
-})
+app.post("/register", (req, res) => {
+  const { email, password } = req.body;
 
-app.post("/urls/:shortURL/delete", (req, res) => {
-  const { user_id } = req.session;
-  const { shortURL } = req.params;
-  if (!user_id) return sendErrorMessage(res, 401, mustLogin)
-  if (urlDatabase[shortURL].userID !== user_id) return sendErrorMessage(res, 403, noPermissionDelete);
+  // Handle error when user submits form with empty email or password.
+  if (!email || !password) return sendErrorMessage(res, 400, emptyEmailPassword);
 
-  delete urlDatabase[shortURL];
-  res.redirect("/urls");
+  // Handle error when the entered email already exists.
+  if (getUserByEmail(email, users)) return sendErrorMessage(res, 409, emailAlreadyUsed);
+
+  // Generate random userId of length 10
+  const userId = generateRandomString(10);
+
+  // Hash password and add new user info to 
+  const hashedPassword = bcrypt.hashSync(password, 12);
+  users[userId] = {
+    id: userId,
+    email,
+    hashedPassword
+  };
+
+  req.session.user_id = userId;
+  res.redirect("/urls")
 });
+
+// Render login form
+
+app.get("/login", (req, res) => {
+  const templateVars = {
+    urls: urlDatabase,
+    user: undefined
+  };
+  res.render("login_page", templateVars);
+});
+
+// Authenticate and log user in
 
 app.post("/login", (req, res) => {
   const { email, password } = req.body;
@@ -66,47 +97,21 @@ app.post("/login", (req, res) => {
   res.redirect("/urls");
 });
 
-app.get("/login", (req, res) => {
-  const templateVars = {
-    urls: urlDatabase,
-    user: undefined
-  };
-  res.render("login_page", templateVars);
-});
-
-app.get("/register", (req, res) => {
-  const templateVars = {
-    urls: urlDatabase,
-    user: undefined
-  };
-  res.render("register_page", templateVars);
-});
-
-app.post("/register", (req, res) => {
-  const { email, password } = req.body;
-
-  if (!email || !password) return sendErrorMessage(res, 400, emptyEmailPassword);
-  if (getUserByEmail(email, users)) return sendErrorMessage(res, 409, emailAlreadyUsed);
-
-  const userId = generateRandomString(10);
-
-  const hashedPassword = bcrypt.hashSync(password, 12);
-
-  users[userId] = {
-    id: userId,
-    email,
-    hashedPassword
-  };
-
-  req.session.user_id = userId;
-  res.redirect("/urls")
-});
+// Log user out
 
 app.post("/logout", (req, res) => {
   req.session = null;
   res.redirect("/urls");
 });
 
+/****************************************** Application logic routes ******************************************/
+
+// Redirect user to /urls page
+app.get("/", (req, res) => {
+  res.redirect("/urls");
+});
+
+// Render urls summary page
 app.get("/urls", (req, res) => {
   const { user_id } = req.session;
   const user = users[user_id];
@@ -120,11 +125,30 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars);
 });
 
+// Render new url form
+
+app.get("/urls/new", (req, res) => {
+  const { user_id } = req.session;
+  const user = users[user_id];
+
+  // If the user is not logged in, redirect to login page
+  if (!user) return res.redirect("/login");
+
+  const templateVars = {
+    urls: urlDatabase,
+    user
+  }
+  res.render("urls_new", templateVars);
+});
+
+// Shorten new url
+
 app.post("/urls", (req, res) => {
   const { user_id } = req.session;
   const user = users[user_id];
+
+  // A user must be logged in to create a new url
   if (!user) return sendErrorMessage(res, 401, mustLogin);
-  if (user.id !== user_id) return sendErrorMessage(res, 403, noPermissionCreate)
 
   const { longURL } = req.body;
   const shortURL = generateRandomString(6);
@@ -133,24 +157,40 @@ app.post("/urls", (req, res) => {
   res.redirect(`/urls`)
 });
 
-app.get("/u/:shortURL", (req, res) => {
-  const { shortURL } = req.params;
-  if (!urlDatabase[shortURL]) return sendErrorMessage(res, 404, notFound);
+// Update existing shortened url
 
-  const longURL = urlDatabase[shortURL].longURL
-  res.redirect(longURL);
-});
-
-app.get("/urls/new", (req, res) => {
+app.post("/urls/:id", (req, res) => {
+  const { id } = req.params;
   const { user_id } = req.session;
-  const user = users[user_id];
-  if (!user) return res.redirect("/login");
-  const templateVars = {
-    urls: urlDatabase,
-    user
-  }
-  res.render("urls_new", templateVars);
+
+  // User must be logged in to have permission to update
+  if (!user_id) return sendErrorMessage(res, 401, mustLogin);
+
+  // User can only update urls that belong to the current user
+  if (urlDatabase[id].userID !== user_id) return sendErrorMessage(res, 403, noPermissionUpdate)
+
+  const { longURL } = req.body;
+  urlDatabase[id] = { longURL, userID: user_id };
+  res.redirect("/urls");
+})
+
+// Delete existing shortened url
+
+app.post("/urls/:shortURL/delete", (req, res) => {
+  const { user_id } = req.session;
+  const { shortURL } = req.params;
+
+  // User must be logged in to have permission to delete
+  if (!user_id) return sendErrorMessage(res, 401, mustLogin);
+
+   // Url being deleted must belong to the current user
+  if (urlDatabase[shortURL].userID !== user_id) return sendErrorMessage(res, 403, noPermissionDelete);
+
+  delete urlDatabase[shortURL];
+  res.redirect("/urls");
 });
+
+// Render page to show selected url info
 
 app.get("/urls/:shortURL", (req, res) => {
   const { shortURL } = req.params;
@@ -169,6 +209,18 @@ app.get("/urls/:shortURL", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
+// Redirect short url to long url
+
+app.get("/u/:shortURL", (req, res) => {
+  const { shortURL } = req.params;
+  if (!urlDatabase[shortURL]) return sendErrorMessage(res, 404, notFound);
+
+  const longURL = urlDatabase[shortURL].longURL
+  res.redirect(longURL);
+});
+
+// Start listening on PORT
+
 app.listen(PORT, () => {
-  console.log(`TinyApp is listening on port ${PORT}.`);
+  console.log(`✔️ - TinyApp is listening on port ${PORT}.`);
 });
