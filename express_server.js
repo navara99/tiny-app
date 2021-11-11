@@ -2,7 +2,7 @@ const express = require("express");
 const app = express();
 const bodyParser = require("body-parser");
 const cookieSession = require('cookie-session');
-const { generateRandomString, getUserByEmail, getURLsByUserId, sendErrorMessage } = require("./helpers");
+const { generateRandomString, getUserByEmail, getURLsByUserId, getTodaysDate, sendErrorMessage } = require("./helpers");
 const users = require("./data/usersData");
 const urlDatabase = require("./data/urlDatabase");
 const bcrypt = require("bcrypt");
@@ -156,7 +156,7 @@ app.post("/urls", (req, res) => {
 
   const { longURL } = req.body;
   const shortURL = generateRandomString(6);
-  urlDatabase[shortURL] = { longURL, userID: user_id };
+  urlDatabase[shortURL] = { longURL, userID: user_id, logs: [] };
 
   res.redirect(`/urls`)
 });
@@ -188,7 +188,7 @@ app.delete("/urls/:shortURL", (req, res) => {
   // User must be logged in to have permission to delete
   if (!user_id) return sendErrorMessage(res, 401, mustLogin);
 
-   // Url being deleted must belong to the current user
+  // Url being deleted must belong to the current user
   if (urlDatabase[shortURL].userID !== user_id) return sendErrorMessage(res, 403, noPermissionDelete);
 
   delete urlDatabase[shortURL];
@@ -200,15 +200,17 @@ app.delete("/urls/:shortURL", (req, res) => {
 app.get("/urls/:shortURL", (req, res) => {
   const { shortURL } = req.params;
   const { user_id } = req.session;
-
   if (!user_id) return sendErrorMessage(res, 401, mustLogin);
-  if (urlDatabase[shortURL].userID !== user_id) return sendErrorMessage(res, 403, noAccess);
+
+  const selectedURL = urlDatabase[shortURL];
+
+  if (selectedURL.userID !== user_id) return sendErrorMessage(res, 403, noAccess);
 
   const user = users[user_id];
   const templateVars = {
     shortURL,
-    longURL: urlDatabase[shortURL].longURL,
-    user
+    user,
+    ...selectedURL,
   };
 
   res.render("urls_show", templateVars);
@@ -222,6 +224,17 @@ app.get("/u/:shortURL", (req, res) => {
   // Send a 404 status code error if the shortened url doesnt exist in the database
   if (!urlDatabase[shortURL]) return sendErrorMessage(res, 404, notFound);
 
+  // Summarize visit info into an object
+
+  const visit = {
+    visitor_id: generateRandomString(8),
+    date: getTodaysDate()
+  };
+
+  // Push visit info object into log array
+  urlDatabase[shortURL].logs.push(visit);
+  console.log(urlDatabase);
+  // Get the long url and redirect the visitor to that url
   const longURL = urlDatabase[shortURL].longURL
   res.redirect(longURL);
 });
