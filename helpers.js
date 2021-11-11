@@ -10,47 +10,41 @@ const generateRandomChar = () => {
   if (charType === 3) charCode = randomLowercaseLetter;
 
   return String.fromCharCode(charCode);
-}
+};
 
 const generateRandomString = (length) => {
   let str = "";
   if (typeof length !== "number") return str;
-
   while (str.length < length) {
     str += generateRandomChar();
   }
-
   return str;
-}
+};
 
 const getUserByEmail = (email, users) => {
   if (!email || !users) return;
   const vals = Object.values(users);
   let user;
-
   vals.forEach((value) => {
     if (value.email === email) user = users[value.id];
   });
-
   return user;
-}
+};
 
 const getURLsByUserId = (id, urlDatabase) => {
-  const usersURLs = {}
-
+  const usersURLs = {};
   for (const shortURL in urlDatabase) {
     if (urlDatabase[shortURL].userID === id) {
-      usersURLs[shortURL] = { ...urlDatabase[shortURL] }
+      usersURLs[shortURL] = { ...urlDatabase[shortURL] };
     }
-  };
-
+  }
   return usersURLs;
-}
+};
 
 const getTodaysDate = () => {
   const today = new Date();
   return today.toLocaleDateString();
-}
+};
 
 // Status code messages from https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
 const statusMessages = {
@@ -64,6 +58,12 @@ const statusMessages = {
 const sendErrorMessage = (res, statusCode, message) => {
   const status = statusMessages[statusCode];
   res.status(statusCode).render("error_message", { message, status, statusCode });
-}
+};
 
-module.exports = { generateRandomString, getUserByEmail, getURLsByUserId, sendErrorMessage , getTodaysDate}
+module.exports = {
+  generateRandomString,
+  getUserByEmail,
+  getURLsByUserId,
+  sendErrorMessage,
+  getTodaysDate
+};
