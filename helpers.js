@@ -47,6 +47,11 @@ const getURLsByUserId = (id, urlDatabase) => {
   return usersURLs;
 }
 
+const getTodaysDate = () => {
+  const today = new Date();
+  return today.toLocaleDateString();
+}
+
 // Status code messages from https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
 const statusMessages = {
   400: "Bad Request",
@@ -58,7 +63,7 @@ const statusMessages = {
 
 const sendErrorMessage = (res, statusCode, message) => {
   const status = statusMessages[statusCode];
-  res.status(statusCode).render("error_message", { message, status , statusCode });
+  res.status(statusCode).render("error_message", { message, status, statusCode });
 }
 
-module.exports = { generateRandomString, getUserByEmail, getURLsByUserId, sendErrorMessage }
+module.exports = { generateRandomString, getUserByEmail, getURLsByUserId, sendErrorMessage , getTodaysDate}
