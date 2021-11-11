@@ -213,6 +213,8 @@ app.get("/urls/:shortURL", (req, res) => {
 
 app.get("/u/:shortURL", (req, res) => {
   const { shortURL } = req.params;
+
+  // Send a 404 status code error if the shortened url doesnt exist in the database
   if (!urlDatabase[shortURL]) return sendErrorMessage(res, 404, notFound);
 
   const longURL = urlDatabase[shortURL].longURL
