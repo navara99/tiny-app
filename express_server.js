@@ -178,14 +178,14 @@ app.put("/urls/:id", (req, res) => {
   if (urlDatabase[id].userID !== user_id) return sendErrorMessage(res, 403, noPermissionUpdate)
 
   const { longURL } = req.body;
-  urlDatabase[id] = { longURL, userID: user_id };
+  // Reset the old information and then change the old long url to the new long url.
+  urlDatabase[id] = {longURL , logs:[] , visitors: [], userID: user_id} ;
   res.redirect("/urls");
 })
 
 // Delete existing shortened url
 
 app.delete("/urls/:shortURL", (req, res) => {
-  console.log(req.headers)
   const { user_id } = req.session;
   const { shortURL } = req.params;
 
