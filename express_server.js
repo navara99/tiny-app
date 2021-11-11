@@ -156,7 +156,7 @@ app.post("/urls", (req, res) => {
 
   const { longURL } = req.body;
   const shortURL = generateRandomString(6);
-  urlDatabase[shortURL] = { longURL, userID: user_id, logs: [] };
+  urlDatabase[shortURL] = { longURL, userID: user_id, logs: [], visitors: [] };
 
   res.redirect(`/urls`)
 });
@@ -220,22 +220,32 @@ app.get("/urls/:shortURL", (req, res) => {
 
 app.get("/u/:shortURL", (req, res) => {
   const { shortURL } = req.params;
-
+  const { visitor_Id } = req.session;
+  const selectedURL = urlDatabase[shortURL];
   // Send a 404 status code error if the shortened url doesnt exist in the database
-  if (!urlDatabase[shortURL]) return sendErrorMessage(res, 404, notFound);
+  if (!selectedURL) return sendErrorMessage(res, 404, notFound);
 
-  // Summarize visit info into an object
+  // if there is a visitor cookie present, use that as visitor id, if there isnt, create a new visitor id.
+  const visitorId = visitor_Id ? visitor_Id : generateRandomString(6);
 
+  // Set cookie for visitor , 
+  req.session.visitor_Id = visitorId;
+
+  // If this is the first time user is visiting this url, add their id to the visitors array
+  const hasUserVisitedURLBefore = selectedURL.visitors.includes(visitorId);
+  if (!hasUserVisitedURLBefore) selectedURL.visitors.push(visitorId);
+
+  // Summarize visitor info into an object
   const visit = {
-    visitor_id: generateRandomString(8),
+    visitorId,
     date: getTodaysDate()
   };
 
-  // Push visit info object into log array
-  urlDatabase[shortURL].logs.push(visit);
-  console.log(urlDatabase);
+  // Push visit info object into log array of the url
+  selectedURL.logs.push(visit);
+
   // Get the long url and redirect the visitor to that url
-  const longURL = urlDatabase[shortURL].longURL
+  const longURL = selectedURL.longURL
   res.redirect(longURL);
 });
 
