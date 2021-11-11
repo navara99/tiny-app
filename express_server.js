@@ -179,7 +179,7 @@ app.put("/urls/:id", (req, res) => {
 
   const { longURL } = req.body;
   // Reset the old information and then change the old long url to the new long url.
-  urlDatabase[id] = {longURL , logs:[] , visitors: [], userID: user_id} ;
+  urlDatabase[id].longURL = longURL;
   res.redirect("/urls");
 })
 
