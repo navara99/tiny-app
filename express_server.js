@@ -8,6 +8,7 @@ const urlDatabase = require("./data/urlDatabase");
 const bcrypt = require("bcrypt");
 const PORT = 8080;
 const secret = generateRandomString(12);
+const methodOverride = require("method-override");
 
 /*********************************************** General App Setup ***********************************************/
 
@@ -19,6 +20,9 @@ app.use(cookieSession({ secret }));
 
 // Setting up bodyParser middlewear
 app.use(bodyParser.urlencoded({ extended: true }));
+
+// override with POST having ?_method=DELETE & ?_method=PUT
+app.use(methodOverride("_method"));
 
 //  Messages used in handling errors
 
@@ -159,7 +163,7 @@ app.post("/urls", (req, res) => {
 
 // Update existing shortened url
 
-app.post("/urls/:id", (req, res) => {
+app.put("/urls/:id", (req, res) => {
   const { id } = req.params;
   const { user_id } = req.session;
 
@@ -176,7 +180,8 @@ app.post("/urls/:id", (req, res) => {
 
 // Delete existing shortened url
 
-app.post("/urls/:shortURL/delete", (req, res) => {
+app.delete("/urls/:shortURL", (req, res) => {
+  console.log(req.headers)
   const { user_id } = req.session;
   const { shortURL } = req.params;
 

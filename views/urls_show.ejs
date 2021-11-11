@@ -21,7 +21,7 @@
       </div>
       <div class="card-footer text-muted">
         <h5>Edit</h5>
-        <form  action="/urls/<%= shortURL %>" method="POST">
+        <form  action="/urls/<%= shortURL %>?_method=PUT" method="POST">
           <div>
             <label for="longURL">New URL:</label>
             <input type="text" name="longURL" placeholder="http://"
