@@ -1,19 +1,23 @@
 const express = require("express");
 const app = express();
 const bodyParser = require("body-parser");
+const morgan = require("morgan");
 const cookieSession = require('cookie-session');
 const { generateRandomString, getUserByEmail, getURLsByUserId, getTodaysDate, sendErrorMessage } = require("./helpers");
 const users = require("./data/usersData");
 const urlDatabase = require("./data/urlDatabase");
 const bcrypt = require("bcrypt");
-const PORT = 8080;
 const secret = generateRandomString(12);
 const methodOverride = require("method-override");
+const PORT = 8080;
 
 /*********************************************** General App Setup ***********************************************/
 
 // Setting ejs as view engine
 app.set("view engine", "ejs");
+
+// Settings up morgan middlewear for dev
+app.use(morgan('tiny'));
 
 // Setting up cookie-session middlewear
 app.use(cookieSession({ secret }));
