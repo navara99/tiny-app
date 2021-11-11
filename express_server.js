@@ -13,6 +13,20 @@ app.set("view engine", "ejs");
 app.use(cookieSession({ secret }));
 app.use(bodyParser.urlencoded({ extended: true }));
 
+//  Messages used in handling errors
+
+const mustLogin = "You must login to make this request.";
+const noPermissionUpdate = "You do not have permission to update this resource.";
+const noPermissionDelete = "You do not have permission to delete this resource.";
+const noPermissionCreate = "You do not have permission to create a resource."
+const noAccess = "You do not have access to this resource."
+const incorrectEmailOrPass = "Email/Password is incorrect.";
+const emptyEmailPassword = "Email or Password field is empty.";
+const emailNotFound = "Email not found. Please create a new account."
+const emailAlreadyUsed = "Email is already being used. Please login.";
+const notFound = "The requested resource was not found.";
+const notLoggedIn = "Please login or create a new account to use TinyApp."
+
 app.get("/", (req, res) => {
   res.redirect("/urls");
 });
@@ -20,8 +34,8 @@ app.get("/", (req, res) => {
 app.post("/urls/:id", (req, res) => {
   const { id } = req.params;
   const { user_id } = req.session;
-  if (!user_id) return sendErrorMessage(res, 401, "You must login to make this request.");
-  if (urlDatabase[id].userID !== user_id) return sendErrorMessage(res, 403, "You do not have permission to update this resource.")
+  if (!user_id) return sendErrorMessage(res, 401, mustLogin);
+  if (urlDatabase[id].userID !== user_id) return sendErrorMessage(res, 403, noPermissionUpdate)
 
   const { longURL } = req.body;
   urlDatabase[id] = { longURL, userID: user_id };
@@ -31,8 +45,8 @@ app.post("/urls/:id", (req, res) => {
 app.post("/urls/:shortURL/delete", (req, res) => {
   const { user_id } = req.session;
   const { shortURL } = req.params;
-  if (!user_id) return sendErrorMessage(res,401, "You must login to make this request.")
-  if (urlDatabase[shortURL].userID !== user_id) return sendErrorMessage(res, 403, "You do not have permission to delete this resource.");
+  if (!user_id) return sendErrorMessage(res, 401, mustLogin)
+  if (urlDatabase[shortURL].userID !== user_id) return sendErrorMessage(res, 403, noPermissionDelete);
 
   delete urlDatabase[shortURL];
   res.redirect("/urls");
@@ -40,13 +54,13 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 
 app.post("/login", (req, res) => {
   const { email, password } = req.body;
-  if (!email || !password) return sendErrorMessage(res, 400, "Email or Password field is empty.");
+  if (!email || !password) return sendErrorMessage(res, 400, emptyEmailPassword);
   const user = getUserByEmail(email, users);
-  if (!user) return sendErrorMessage(res, 403, "Email not found. Please create a new account.");
+  if (!user) return sendErrorMessage(res, 403, emailNotFound);
 
   const correctPassword = bcrypt.compareSync(password, user.hashedPassword);
 
-  if (!correctPassword) sendErrorMessage(res, 403, "Email/Password is incorrect.");
+  if (!correctPassword) sendErrorMessage(res, 403, incorrectEmailOrPass);
 
   req.session.user_id = user.id;
   res.redirect("/urls");
@@ -71,8 +85,8 @@ app.get("/register", (req, res) => {
 app.post("/register", (req, res) => {
   const { email, password } = req.body;
 
-  if (!email || !password) return sendErrorMessage(res, 400, "Email or Password field is empty.");
-  if (getUserByEmail(email, users)) return sendErrorMessage(res, 409, "Email is already being used. Please login.");
+  if (!email || !password) return sendErrorMessage(res, 400, emptyEmailPassword);
+  if (getUserByEmail(email, users)) return sendErrorMessage(res, 409, emailAlreadyUsed);
 
   const userId = generateRandomString(10);
 
@@ -96,7 +110,7 @@ app.post("/logout", (req, res) => {
 app.get("/urls", (req, res) => {
   const { user_id } = req.session;
   const user = users[user_id];
-  if (!user) return res.render("login_message", { message: "Please login or create a new account to use TinyApp.", user })
+  if (!user) return res.render("login_message", { message: notLoggedIn, user })
   const userURLs = getURLsByUserId(user_id, urlDatabase);
   const templateVars = {
     urls: userURLs,
@@ -108,7 +122,9 @@ app.get("/urls", (req, res) => {
 
 app.post("/urls", (req, res) => {
   const { user_id } = req.session;
-  if (!users[user_id]) return sendErrorMessage(res, 401, "You do not have access to this resource.");
+  const user = users[user_id];
+  if (!user) return sendErrorMessage(res, 401, mustLogin);
+  if (user.id !== user_id) return sendErrorMessage(res, 403, noPermissionCreate)
 
   const { longURL } = req.body;
   const shortURL = generateRandomString(6);
@@ -119,7 +135,7 @@ app.post("/urls", (req, res) => {
 
 app.get("/u/:shortURL", (req, res) => {
   const { shortURL } = req.params;
-  if (!urlDatabase[shortURL]) return sendErrorMessage(res, 404, "The requested resource was not found.");
+  if (!urlDatabase[shortURL]) return sendErrorMessage(res, 404, notFound);
 
   const longURL = urlDatabase[shortURL].longURL
   res.redirect(longURL);
@@ -140,8 +156,8 @@ app.get("/urls/:shortURL", (req, res) => {
   const { shortURL } = req.params;
   const { user_id } = req.session;
 
-  if (!user_id) return sendErrorMessage(res, 401, "Please log in to access this resource.")
-  if (urlDatabase[shortURL].userID !== user_id) return sendErrorMessage(res, 403, "You do not have access to this resource");
+  if (!user_id) return sendErrorMessage(res, 401, mustLogin);
+  if (urlDatabase[shortURL].userID !== user_id) return sendErrorMessage(res, 403, noAccess);
 
   const user = users[user_id];
   const templateVars = {
