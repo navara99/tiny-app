@@ -43,7 +43,8 @@ const getURLsByUserId = (id, urlDatabase) => {
 
 const getTodaysDate = () => {
   const today = new Date();
-  return today.toLocaleDateString();
+  const dateAndTime = today.toLocaleDateString() + " " + today.toLocaleTimeString('en-US', { timeZone: 'America/New_York', hour12: true });
+  return dateAndTime + " (EST)"
 };
 
 // Status code messages from https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
