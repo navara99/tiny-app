@@ -63,7 +63,7 @@ DEV Dependencies
 
 ## Future Plans
 
-* Implement line graph to visualize trends in clicks
+* implement line graph to visualize trends in clicks
 
 * improve appearance to make design more modern (the current focus was only on functionality)
 
