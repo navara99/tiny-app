@@ -43,7 +43,9 @@ const getURLsByUserId = (id, urlDatabase) => {
 
 const getTodaysDate = () => {
   const today = new Date();
-  const dateAndTime = today.toLocaleDateString() + " " + today.toLocaleTimeString('en-US', { timeZone: 'America/New_York', hour12: true });
+  const timeZone = { timeZone: "America/New_York" };
+  const langCode = "en-US";
+  const dateAndTime = today.toLocaleDateString(langCode, timeZone) + " " + today.toLocaleTimeString(langCode, { ...timeZone, hour12: true });
   return dateAndTime + " (EST)"
 };
 
