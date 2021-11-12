@@ -114,8 +114,11 @@ app.post("/logout", (req, res) => {
 
 /****************************************** Application logic routes ******************************************/
 
-// Redirect user to /urls page
+// Redirect user to /urls page if logged in, otherwise redirect to /login
 app.get("/", (req, res) => {
+  const { user_id } = req.session;
+  const user = users[user_id];
+  if(!user) res.redirect("/login");
   res.redirect("/urls");
 });
 
