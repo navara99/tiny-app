@@ -46,7 +46,7 @@ const getTodaysDate = () => {
   const timeZone = { timeZone: "America/New_York" };
   const langCode = "en-US";
   const dateAndTime = today.toLocaleDateString(langCode, timeZone) + " " + today.toLocaleTimeString(langCode, { ...timeZone, hour12: true });
-  return dateAndTime + " (EST)"
+  return dateAndTime + " (EST)";
 };
 
 // Status code messages from https://developer.mozilla.org/en-US/docs/Web/HTTP/Status

@@ -33,13 +33,13 @@ app.use(methodOverride("_method"));
 const mustLogin = "You must login to make this request.";
 const noPermissionUpdate = "You do not have permission to update this resource.";
 const noPermissionDelete = "You do not have permission to delete this resource.";
-const noAccess = "You do not have access to this resource."
+const noAccess = "You do not have access to this resource.";
 const incorrectEmailOrPass = "Email/Password is incorrect.";
 const emptyEmailPassword = "Email or Password field is empty.";
-const emailNotFound = "Email not found. Please create a new account."
+const emailNotFound = "Email not found. Please create a new account.";
 const emailAlreadyUsed = "Email is already being used. Please login.";
 const notFound = "The requested resource was not found.";
-const notLoggedIn = "Please login or create a new account to use TinyApp."
+const notLoggedIn = "Please login or create a new account to use TinyApp.";
 
 /****************************************** Authentication related routes ******************************************/
 
@@ -67,7 +67,7 @@ app.post("/register", (req, res) => {
   // Generate random userId of length 10
   const userId = generateRandomString(10);
 
-  // Hash password and add new user info to 
+  // Hash password and add new user info to
   const hashedPassword = bcrypt.hashSync(password, 12);
   users[userId] = {
     id: userId,
@@ -76,7 +76,7 @@ app.post("/register", (req, res) => {
   };
 
   req.session.user_id = userId;
-  res.redirect("/urls")
+  res.redirect("/urls");
 });
 
 // Render login form
@@ -123,12 +123,12 @@ app.get("/", (req, res) => {
 app.get("/urls", (req, res) => {
   const { user_id } = req.session;
   const user = users[user_id];
-  if (!user) return res.render("login_message", { message: notLoggedIn, user })
+  if (!user) return res.render("login_message", { message: notLoggedIn, user });
   const userURLs = getURLsByUserId(user_id, urlDatabase);
   const templateVars = {
     urls: userURLs,
     user
-  }
+  };
 
   res.render("urls_index", templateVars);
 });
@@ -145,7 +145,7 @@ app.get("/urls/new", (req, res) => {
   const templateVars = {
     urls: urlDatabase,
     user
-  }
+  };
   res.render("urls_new", templateVars);
 });
 
@@ -162,7 +162,7 @@ app.post("/urls", (req, res) => {
   const shortURL = generateRandomString(6);
   urlDatabase[shortURL] = { longURL, userID: user_id, logs: [], visitors: [], date: getTodaysDate() };
 
-  res.redirect(`/urls`)
+  res.redirect(`/urls`);
 });
 
 // Update existing shortened url
@@ -175,13 +175,13 @@ app.put("/urls/:id", (req, res) => {
   if (!user_id) return sendErrorMessage(res, 401, mustLogin);
 
   // User can only update urls that belong to the current user
-  if (urlDatabase[id].userID !== user_id) return sendErrorMessage(res, 403, noPermissionUpdate)
+  if (urlDatabase[id].userID !== user_id) return sendErrorMessage(res, 403, noPermissionUpdate);
 
   const { longURL } = req.body;
   // Reset the old information and then change the old long url to the new long url.
   urlDatabase[id].longURL = longURL;
   res.redirect("/urls");
-})
+});
 
 // Delete existing shortened url
 
@@ -232,7 +232,7 @@ app.get("/u/:shortURL", (req, res) => {
   // if there is a visitor cookie present, use that as visitor id, if there isnt, create a new visitor id.
   const visitorId = visitor_Id ? visitor_Id : generateRandomString(6);
 
-  // Set cookie for visitor , 
+  // Set cookie for visitor ,
   req.session.visitor_Id = visitorId;
 
   // If this is the first time user is visiting this url, add their id to the visitors array
@@ -249,7 +249,7 @@ app.get("/u/:shortURL", (req, res) => {
   selectedURL.logs.push(visit);
 
   // Get the long url and redirect the visitor to that url
-  const longURL = selectedURL.longURL
+  const longURL = selectedURL.longURL;
   res.redirect(longURL);
 });
 
