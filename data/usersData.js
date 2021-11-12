@@ -1,19 +1,9 @@
 const users = {
-  "testuser123": {
-    id: "testuser123",
+  "testuser": {
+    id: "testuser",
     email: "user@example.com",
-    password: "88888888"
+    hashedPassword: "$2b$10$5o4LIQQop2rc/HeuCq.S9.Mqo55VH8IGehKFot7jIY7a24sEZraKq" // Password is "watermelon"
   },
-  "testuserabc": {
-    id: "testuserabc",
-    email: "user2@example.com",
-    password: "22222222"
-  },
-  "E02a9OV5xz": {
-    id: "E02a9OV5xz",
-    email: "test@test.com",
-    password: "abcdefgh"
-  }
 };
 
 module.exports = users;
